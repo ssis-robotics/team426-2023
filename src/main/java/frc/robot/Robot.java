@@ -34,9 +34,9 @@ public class Robot extends TimedRobot {
   private DutyCycle aileronPWM;
   private DutyCycle elevationPWM;
   private DutyCycle channel6PWM;
-  private int drivePWM;
-  private int directionPWM;
-  private int activePWM;
+  private double drivePWM;
+  private double directionPWM;
+  private double activePWM;
   private double drive;
   private double direction;
   private boolean pwmActive;
@@ -86,8 +86,8 @@ public class Robot extends TimedRobot {
     // Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
     gamepadDrive = new XboxController(0);
 
-    elevationPWM = new DutyCycle(new DigitalInput(0));
-    aileronPWM = new DutyCycle(new DigitalInput(1));
+    aileronPWM = new DutyCycle(new DigitalInput(0));
+    elevationPWM = new DutyCycle(new DigitalInput(1));
     channel6PWM = new DutyCycle(new DigitalInput(2));
     
     pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
@@ -113,8 +113,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("conveyorMotor2", conveyorMotorCIM2.get());
     SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
     SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
-    drivePWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
-    directionPWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
+    drivePWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
+    directionPWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
     activePWM = (int) channel6PWM.getHighTimeNanoseconds()/1000;
     if(activePWM > 1600) {
       pwmActive = true;
@@ -178,9 +178,11 @@ public class Robot extends TimedRobot {
     double leftY = gamepadDrive.getLeftX()*1.0;
     double rightX = gamepadDrive.getLeftY()*0.7;
     m_myRobot.arcadeDrive(leftY,rightX);
+    drivePWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
+    drive = (drivePWM - 1500) / 500;
     conveyorMotorCIM1.set(0.0);
     conveyorMotorCIM2.set(0.0);
-    climbMotorCIM1.set(0);
+    climbMotorCIM1.set(drive);
     climbMotorCIM2.set(0);
     colorWheelArm.set(0);
     colorWheelDrive.set(0);
