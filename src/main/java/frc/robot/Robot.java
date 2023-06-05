@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycle;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
@@ -29,6 +31,8 @@ public class Robot extends TimedRobot {
   private DifferentialDrive m_myRobot;
   private XboxController gamepadDrive;
   private double robotHeading;
+  private DutyCycle aileronPWM;
+  private DutyCycle elevationPWM;
 
   private WPI_TalonSRX leftMotorControllerCIM1;
   private WPI_TalonSRX leftMotorControllerCIM2;
@@ -72,7 +76,11 @@ public class Robot extends TimedRobot {
     colorWheelDrive = new WPI_VictorSPX(8);
     colorWheelArm = new WPI_VictorSPX(9);
     // Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
-    gamepadDrive = new XboxController(0); 
+    gamepadDrive = new XboxController(0);
+
+    aileronPWM = new DutyCycle(new DigitalInput(0));
+    elevationPWM = new DutyCycle(new DigitalInput(1));
+    
     pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
     pigeonIMUData = new double[3];
     pigeonIMU.setFusedHeading(70);
@@ -95,7 +103,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("conveyorMotor1", conveyorMotorCIM1.get());
     SmartDashboard.putNumber("conveyorMotor2", conveyorMotorCIM2.get());
     SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
-    SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
+    SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
+    SmartDashboard.putNumber("aileron frequency", aileronPWM.getFrequency());
+    SmartDashboard.putNumber("aileron time high ns", aileronPWM.getHighTimeNanoseconds());
+    SmartDashboard.putNumber("elevation time high", elevationPWM.getFrequency());
   }
 
   /**
