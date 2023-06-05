@@ -10,7 +10,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 /**
@@ -32,10 +34,16 @@ public class Robot extends TimedRobot {
   private WPI_TalonSRX leftMotorControllerCIM2;
   private WPI_TalonSRX rightMotorControllerCIM1;
   private WPI_TalonSRX rightMotorControllerCIM2;
-  
   private MotorControllerGroup leftMotorGroup;
   private MotorControllerGroup rightMotorGroup;
   
+  private WPI_TalonSRX climbMotorCIM1;
+  private WPI_TalonSRX climbMotorCIM2;
+  private WPI_VictorSPX conveyorMotorCIM1;
+  private WPI_VictorSPX conveyorMotorCIM2;
+  private WPI_VictorSPX colorWheelDrive;
+  private WPI_VictorSPX colorWheelArm;
+
   private PigeonIMU pigeonIMU;
   private double [] pigeonIMUData;
 
@@ -54,9 +62,16 @@ public class Robot extends TimedRobot {
     rightMotorControllerCIM1 = new WPI_TalonSRX(2);
     rightMotorControllerCIM2 = new WPI_TalonSRX(3);
     rightMotorGroup = new MotorControllerGroup(rightMotorControllerCIM1,rightMotorControllerCIM2);
-    //Create a differential drive system using the left and right motor groups
+    // Create a differential drive system using the left and right motor groups
     m_myRobot = new DifferentialDrive(leftMotorGroup, rightMotorGroup);
-    //Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
+    // Constructors for the other 6 motors
+    climbMotorCIM1 = new WPI_TalonSRX(4);
+    climbMotorCIM2 = new WPI_TalonSRX(5);
+    conveyorMotorCIM1 = new WPI_VictorSPX(6);
+    conveyorMotorCIM2 = new WPI_VictorSPX(7);
+    colorWheelDrive = new WPI_VictorSPX(8);
+    colorWheelArm = new WPI_VictorSPX(9);
+    // Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
     gamepadDrive = new XboxController(0); 
     pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
     pigeonIMUData = new double[3];
@@ -77,6 +92,10 @@ public class Robot extends TimedRobot {
     pigeonIMU.getYawPitchRoll(pigeonIMUData);
     robotHeading = pigeonIMU.getFusedHeading();  
     SmartDashboard.putNumber("Robot Heading",robotHeading);
+    SmartDashboard.putNumber("conveyorMotor1", conveyorMotorCIM1.get());
+    SmartDashboard.putNumber("conveyorMotor2", conveyorMotorCIM2.get());
+    SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
+    SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
   }
 
   /**
@@ -120,6 +139,12 @@ public class Robot extends TimedRobot {
     double leftY = gamepadDrive.getLeftX()*1.0;
     double rightX = gamepadDrive.getLeftY()*0.7;
     m_myRobot.arcadeDrive(leftY,rightX);
+    conveyorMotorCIM1.set(0.0);
+    conveyorMotorCIM2.set(0.0);
+    climbMotorCIM1.set(0);
+    climbMotorCIM2.set(0);
+    colorWheelArm.set(0);
+    colorWheelDrive.set(0);
   }
 
   /** This function is called once when the robot is disabled. */
