@@ -33,13 +33,10 @@ public class Robot extends TimedRobot {
   private double robotHeading;
   private DutyCycle aileronPWM;
   private DutyCycle elevationPWM;
-  private DutyCycle channel6PWM;
   private double drivePWM;
   private double directionPWM;
-  private double activePWM;
   private double drive;
   private double direction;
-  private boolean pwmActive;
 
   private WPI_TalonSRX leftMotorControllerCIM1;
   private WPI_TalonSRX leftMotorControllerCIM2;
@@ -67,7 +64,6 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    pwmActive = false;
     leftMotorControllerCIM1 = new WPI_TalonSRX(0);
     leftMotorControllerCIM2 = new WPI_TalonSRX(1);
     leftMotorGroup = new MotorControllerGroup(leftMotorControllerCIM1,leftMotorControllerCIM2);
@@ -88,7 +84,6 @@ public class Robot extends TimedRobot {
 
     aileronPWM = new DutyCycle(new DigitalInput(0));
     elevationPWM = new DutyCycle(new DigitalInput(1));
-    channel6PWM = new DutyCycle(new DigitalInput(2));
     
     pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
     pigeonIMUData = new double[3];
@@ -115,26 +110,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
     drivePWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
     directionPWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
-    activePWM = (int) channel6PWM.getHighTimeNanoseconds()/1000;
-    if(activePWM > 1600) {
-      pwmActive = true;
-    }
-    else {
-      pwmActive = false;
-    }
     SmartDashboard.putNumber("aileron time high", drivePWM);
     SmartDashboard.putNumber("elevation time high", directionPWM);
     drive = (drivePWM - 1500) / 500;
     direction = (directionPWM - 1500) / 500;
     SmartDashboard.putNumber("Drive", drive);
     SmartDashboard.putNumber("Direction", direction);
-    SmartDashboard.putNumber("Active", activePWM);
-    if(pwmActive == true) {
-      climbMotorCIM1.set(drive);
-    } 
-    else {
-      climbMotorCIM1.set(0.0);
-    }
   }
 
   /**
@@ -175,14 +156,17 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    double leftY = gamepadDrive.getLeftX()*1.0;
-    double rightX = gamepadDrive.getLeftY()*0.7;
-    m_myRobot.arcadeDrive(leftY,rightX);
+    double leftX = gamepadDrive.getLeftX()*0.5; // from left controller
+    double leftY = gamepadDrive.getLeftY()*1.0;
     drivePWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
     drive = (drivePWM - 1500) / 500;
+    directionPWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
+    direction = (directionPWM - 1500) / 500;    
+    // combine left controller on Windows PC and PWM input
+    m_myRobot.arcadeDrive(leftX + direction, leftY + drive);
     conveyorMotorCIM1.set(0.0);
     conveyorMotorCIM2.set(0.0);
-    climbMotorCIM1.set(drive);
+    climbMotorCIM1.set(0.0);
     climbMotorCIM2.set(0);
     colorWheelArm.set(0);
     colorWheelDrive.set(0);
