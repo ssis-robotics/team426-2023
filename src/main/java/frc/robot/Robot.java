@@ -7,6 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.sensors.PigeonIMU;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -19,6 +24,20 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  private DifferentialDrive m_myRobot;
+  private XboxController gamepadDrive;
+  private double robotHeading;
+
+  private WPI_TalonSRX leftMotorControllerCIM1;
+  private WPI_TalonSRX leftMotorControllerCIM2;
+  private WPI_TalonSRX rightMotorControllerCIM1;
+  private WPI_TalonSRX rightMotorControllerCIM2;
+  
+  private MotorControllerGroup leftMotorGroup;
+  private MotorControllerGroup rightMotorGroup;
+  
+  private PigeonIMU pigeonIMU;
+  private double [] pigeonIMUData;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -29,6 +48,19 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    leftMotorControllerCIM1 = new WPI_TalonSRX(0);
+    leftMotorControllerCIM2 = new WPI_TalonSRX(1);
+    leftMotorGroup = new MotorControllerGroup(leftMotorControllerCIM1,leftMotorControllerCIM2);
+    rightMotorControllerCIM1 = new WPI_TalonSRX(2);
+    rightMotorControllerCIM2 = new WPI_TalonSRX(3);
+    rightMotorGroup = new MotorControllerGroup(rightMotorControllerCIM1,rightMotorControllerCIM2);
+    //Create a differential drive system using the left and right motor groups
+    m_myRobot = new DifferentialDrive(leftMotorGroup, rightMotorGroup);
+    //Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
+    gamepadDrive = new XboxController(0); 
+    pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
+    pigeonIMUData = new double[3];
+    pigeonIMU.setFusedHeading(70);
   }
 
   /**
@@ -39,7 +71,13 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    SmartDashboard.putNumber("leftMotor", leftMotorControllerCIM1.get());
+    SmartDashboard.putNumber("rightMotor", rightMotorControllerCIM1.get());
+    pigeonIMU.getYawPitchRoll(pigeonIMUData);
+    robotHeading = pigeonIMU.getFusedHeading();  
+    SmartDashboard.putNumber("Robot Heading",robotHeading);
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -78,7 +116,11 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    double leftY = gamepadDrive.getLeftX()*1.0;
+    double rightX = gamepadDrive.getLeftY()*0.7;
+    m_myRobot.arcadeDrive(leftY,rightX);
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
