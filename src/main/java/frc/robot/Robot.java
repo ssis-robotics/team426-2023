@@ -33,11 +33,13 @@ public class Robot extends TimedRobot {
   private double robotHeading;
   private DutyCycle aileronPWM;
   private DutyCycle elevationPWM;
-  private boolean pwmActive;
-  private double drivePWM;
-  private double directionPWM;
+  private DutyCycle channel6PWM;
+  private int drivePWM;
+  private int directionPWM;
+  private int activePWM;
   private double drive;
   private double direction;
+  private boolean pwmActive;
 
   private WPI_TalonSRX leftMotorControllerCIM1;
   private WPI_TalonSRX leftMotorControllerCIM2;
@@ -84,8 +86,9 @@ public class Robot extends TimedRobot {
     // Set up the two Xbox controllers. The drive is for driving, the operator is for all conveyor and color wheel controls
     gamepadDrive = new XboxController(0);
 
-    aileronPWM = new DutyCycle(new DigitalInput(0));
-    elevationPWM = new DutyCycle(new DigitalInput(1));
+    elevationPWM = new DutyCycle(new DigitalInput(0));
+    aileronPWM = new DutyCycle(new DigitalInput(1));
+    channel6PWM = new DutyCycle(new DigitalInput(2));
     
     pigeonIMU = new PigeonIMU(rightMotorControllerCIM2);
     pigeonIMUData = new double[3];
@@ -110,13 +113,22 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("conveyorMotor2", conveyorMotorCIM2.get());
     SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
     SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
-    SmartDashboard.putNumber("aileron frequency", aileronPWM.getFrequency());
     drivePWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
     directionPWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
+    activePWM = (int) channel6PWM.getHighTimeNanoseconds()/1000;
+    if(activePWM > 1600) {
+      pwmActive = true;
+    }
+    else {
+      pwmActive = false;
+    }
     SmartDashboard.putNumber("aileron time high", drivePWM);
     SmartDashboard.putNumber("elevation time high", directionPWM);
-    SmartDashboard.putNumber("Drive", drive);
     drive = (drivePWM - 1500) / 500;
+    direction = (directionPWM - 1500) / 500;
+    SmartDashboard.putNumber("Drive", drive);
+    SmartDashboard.putNumber("Direction", direction);
+    SmartDashboard.putNumber("Active", activePWM);
     if(pwmActive == true) {
       climbMotorCIM1.set(drive);
     } 
