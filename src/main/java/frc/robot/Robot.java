@@ -33,6 +33,11 @@ public class Robot extends TimedRobot {
   private double robotHeading;
   private DutyCycle aileronPWM;
   private DutyCycle elevationPWM;
+  private boolean pwmActive;
+  private double drivePWM;
+  private double directionPWM;
+  private double drive;
+  private double direction;
 
   private WPI_TalonSRX leftMotorControllerCIM1;
   private WPI_TalonSRX leftMotorControllerCIM2;
@@ -60,6 +65,7 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    pwmActive = false;
     leftMotorControllerCIM1 = new WPI_TalonSRX(0);
     leftMotorControllerCIM2 = new WPI_TalonSRX(1);
     leftMotorGroup = new MotorControllerGroup(leftMotorControllerCIM1,leftMotorControllerCIM2);
@@ -105,8 +111,18 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
     SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
     SmartDashboard.putNumber("aileron frequency", aileronPWM.getFrequency());
-    SmartDashboard.putNumber("aileron time high ns", aileronPWM.getHighTimeNanoseconds());
-    SmartDashboard.putNumber("elevation time high", elevationPWM.getFrequency());
+    drivePWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
+    directionPWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
+    SmartDashboard.putNumber("aileron time high", drivePWM);
+    SmartDashboard.putNumber("elevation time high", directionPWM);
+    SmartDashboard.putNumber("Drive", drive);
+    drive = (drivePWM - 1500) / 500;
+    if(pwmActive == true) {
+      climbMotorCIM1.set(drive);
+    } 
+    else {
+      climbMotorCIM1.set(0.0);
+    }
   }
 
   /**
