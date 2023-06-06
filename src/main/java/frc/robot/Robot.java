@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycle;
+import edu.wpi.first.wpilibj.PowerDistribution;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
@@ -29,6 +30,7 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private DifferentialDrive m_myRobot;
+  private final PowerDistribution m_pdp = new PowerDistribution();
   private XboxController gamepadDrive;
   private double robotHeading;
   private DutyCycle aileronPWM;
@@ -64,7 +66,8 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-    leftMotorControllerCIM1 = new WPI_TalonSRX(0);
+    SmartDashboard.putData("PDP", m_pdp);
+    leftMotorControllerCIM1 = new WPI_TalonSRX(10);
     leftMotorControllerCIM2 = new WPI_TalonSRX(1);
     leftMotorGroup = new MotorControllerGroup(leftMotorControllerCIM1,leftMotorControllerCIM2);
     rightMotorControllerCIM1 = new WPI_TalonSRX(2);
@@ -99,6 +102,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    double current0 = m_pdp.getCurrent(0);
+    SmartDashboard.putNumber("Current Channel 0", current0);
+    double voltage = m_pdp.getVoltage();
+    SmartDashboard.putNumber("Voltage", voltage);
     SmartDashboard.putNumber("leftMotor", leftMotorControllerCIM1.get());
     SmartDashboard.putNumber("rightMotor", rightMotorControllerCIM1.get());
     pigeonIMU.getYawPitchRoll(pigeonIMUData);
