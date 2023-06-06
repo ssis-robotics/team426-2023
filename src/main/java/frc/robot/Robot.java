@@ -102,10 +102,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    double current0 = m_pdp.getCurrent(0);
-    SmartDashboard.putNumber("Current Channel 0", current0);
-    double voltage = m_pdp.getVoltage();
-    SmartDashboard.putNumber("Voltage", voltage);
+    double temperatureCelsius = m_pdp.getTemperature();
+    double totalPower = m_pdp.getTotalPower();
+    double totalEnergy = m_pdp.getTotalEnergy();
+    SmartDashboard.putNumber("Temperature", temperatureCelsius);
+    SmartDashboard.putNumber("Total Power", totalPower);
+    SmartDashboard.putNumber("Total Energy", totalEnergy);
+    // double current0 = m_pdp.getCurrent(0);
+    // SmartDashboard.putNumber("Current Channel 0", current0);
+    // double voltage = m_pdp.getVoltage();
+    // SmartDashboard.putNumber("Voltage", voltage);
     SmartDashboard.putNumber("leftMotor", leftMotorControllerCIM1.get());
     SmartDashboard.putNumber("rightMotor", rightMotorControllerCIM1.get());
     pigeonIMU.getYawPitchRoll(pigeonIMUData);
