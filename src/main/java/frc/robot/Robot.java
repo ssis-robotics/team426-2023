@@ -2,6 +2,11 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+// v0.1 23/06/05 progam core updated to 2023 template
+// v0.2 23/06/05 PWM input from RC remote on DIO 0 and 1
+// v0.3 23/06/06 PDP activated as CAN ID 0, Talon SRX moved to 10
+// v0.4 23/06/06 E4T encoder reading connected to Talon 10 and 2 activated
+
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -57,6 +62,9 @@ public class Robot extends TimedRobot {
   private PigeonIMU pigeonIMU;
   private double [] pigeonIMUData;
 
+  private double leftEncoderReading;
+  private double rightEncoderReading;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -102,6 +110,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // PDP Power Distribution Panel readings
     double temperatureCelsius = m_pdp.getTemperature();
     double totalPower = m_pdp.getTotalPower();
     double totalEnergy = m_pdp.getTotalEnergy();
@@ -112,15 +121,27 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putNumber("Current Channel 0", current0);
     // double voltage = m_pdp.getVoltage();
     // SmartDashboard.putNumber("Voltage", voltage);
+
+    // motor readings
     SmartDashboard.putNumber("leftMotor", leftMotorControllerCIM1.get());
     SmartDashboard.putNumber("rightMotor", rightMotorControllerCIM1.get());
-    pigeonIMU.getYawPitchRoll(pigeonIMUData);
-    robotHeading = pigeonIMU.getFusedHeading();  
-    SmartDashboard.putNumber("Robot Heading",robotHeading);
     SmartDashboard.putNumber("conveyorMotor1", conveyorMotorCIM1.get());
     SmartDashboard.putNumber("conveyorMotor2", conveyorMotorCIM2.get());
     SmartDashboard.putNumber("climbMotor1", climbMotorCIM1.get());
     SmartDashboard.putNumber("climbMotor2", climbMotorCIM2.get());
+
+    // IMU readings
+    pigeonIMU.getYawPitchRoll(pigeonIMUData);
+    robotHeading = pigeonIMU.getFusedHeading();  
+    SmartDashboard.putNumber("Robot Heading",robotHeading);
+
+    // Quaterion E4T encoder readings
+    leftEncoderReading = leftMotorControllerCIM1.getSelectedSensorPosition();
+    rightEncoderReading = rightMotorControllerCIM1.getSelectedSensorPosition();
+    SmartDashboard.putNumber("left encoder", leftEncoderReading);
+    SmartDashboard.putNumber("right encoder", rightEncoderReading);
+
+    // PWM input readings
     drivePWM = (int) elevationPWM.getHighTimeNanoseconds()/1000;
     directionPWM = (int) aileronPWM.getHighTimeNanoseconds()/1000;
     SmartDashboard.putNumber("aileron time high", drivePWM);
